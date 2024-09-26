@@ -6,9 +6,16 @@
 int main()
 {
     // test code evaluating sfml is working
-    sf::RenderWindow window(sf::VideoMode(200, 200), "SFML Works");
-    /*sf::CircleShape circle(100.0f);
-    circle.setFillColor(sf::Color::Red);*/
+    sf::RenderWindow window(sf::VideoMode(500, 500), "SFML Works");
+
+    // A border for the boids to move within
+    float boundaryThickness = 2.5f;
+    sf::Vector2f boundarySize = sf::Vector2f(window.getSize().x - (boundaryThickness * 2.f), window.getSize().y - (boundaryThickness * 2.f));
+    sf::RectangleShape boundary(sf::Vector2f(boundarySize.x, boundarySize.y));
+    boundary.setPosition(sf::Vector2f(boundaryThickness, boundaryThickness)); // offset the boundary by its thickness to the right and down
+    boundary.setOutlineThickness(5.f);
+    boundary.setOutlineColor(sf::Color::White);
+    boundary.setFillColor(sf::Color::Black);
 
     #pragma region Font and Text
     // The Font and Text were used for displaying the delta time of each frame
@@ -41,7 +48,11 @@ int main()
 
         window.clear();
 
-        //draw loop
+        /* Draw Loop
+        * 1. Draw the static border that represents the extents that the boids can move in
+        * 2.
+        */
+        window.draw(boundary);
 
         window.display();
     }
