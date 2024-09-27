@@ -1,12 +1,15 @@
 #include <iostream>
 #include <string>
-#include "SFML/Graphics.hpp"
 #include <cassert>
+
+#include "SFML/Graphics.hpp"
+
+#include "boid.hpp"
 
 int main()
 {
     // test code evaluating sfml is working
-    sf::RenderWindow window(sf::VideoMode(500, 500), "SFML Works");
+    sf::RenderWindow window(sf::VideoMode(800, 800), "SFML Works");
 
     // A border for the boids to move within
     float boundaryThickness = 2.5f;
@@ -16,6 +19,29 @@ int main()
     boundary.setOutlineThickness(5.f);
     boundary.setOutlineColor(sf::Color::White);
     boundary.setFillColor(sf::Color::Black);
+
+    // A Shape to render for each boid
+    sf::ConvexShape arrowHead = sf::ConvexShape(3);
+    arrowHead.setPoint(0, sf::Vector2f(0.f, -1.f));
+    arrowHead.setPoint(1, sf::Vector2f(0.5f, 0.5f));
+    arrowHead.setPoint(2, sf::Vector2f(-0.5f, 0.5f));
+    arrowHead.setFillColor(sf::Color::Transparent);
+    arrowHead.setOutlineColor(sf::Color::Green);
+    arrowHead.setOutlineThickness(0.1f);
+    arrowHead.setPosition(100.f, 100.f);
+    arrowHead.setScale(sf::Vector2f(20.f, 20.f));
+    arrowHead.setRotation(0);
+
+    // Create boid flock
+    int numOfBoids = 25;
+    boid_sim::Boid boidFlock[25];
+
+    for (int i = 0; i < numOfBoids; i++) {
+        sf::Vector2f boidPos = sf::Vector2f(5.f + (i * 25), 250.f);
+        sf::ConvexShape boidShape{ arrowHead };
+        boidFlock[i] = boid_sim::Boid(boidPos, boidShape);
+        //printf("%f", boidFlock[i].getPos().x);
+    }
 
     #pragma region Font and Text
     // The Font and Text were used for displaying the delta time of each frame
@@ -50,9 +76,16 @@ int main()
 
         /* Draw Loop
         * 1. Draw the static border that represents the extents that the boids can move in
-        * 2.
+        * 2. Draw the boids in the flock
         */
         window.draw(boundary);
+
+        window.draw(arrowHead);
+
+        for (boid_sim::Boid boid : boidFlock)
+        {
+            window.draw(boid.getShape());
+        }
 
         window.display();
     }
