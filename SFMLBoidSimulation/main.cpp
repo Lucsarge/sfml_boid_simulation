@@ -87,8 +87,6 @@ int main()
         */
         window.draw(boundary);
 
-        window.draw(arrowHead);
-
         for (boid_sim::Boid boid : boidFlock)
         {
             window.draw(boid.getShape());
