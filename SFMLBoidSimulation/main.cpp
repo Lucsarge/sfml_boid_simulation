@@ -44,11 +44,10 @@ int main()
     srand(time(0));
 
     for (int i = 0; i < numOfBoids; i++) {
-        float x = randFloat(boundarySize.x);
-        float y = randFloat(boundarySize.y);
-        sf::Vector2f boidPos = sf::Vector2f(x, y);
+        sf::Vector2f boidPos = sf::Vector2f(randFloat(boundarySize.x), randFloat(boundarySize.y));
+        float boidLookAngle = randFloat(360);
         sf::ConvexShape boidShape{ arrowHead };
-        boidFlock[i] = boid_sim::Boid(boidPos, boidShape);
+        boidFlock[i] = boid_sim::Boid(boidPos, boidLookAngle, boidShape);
     }
 
     #pragma region Font and Text
