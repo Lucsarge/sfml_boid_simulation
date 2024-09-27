@@ -1,10 +1,15 @@
 #include <iostream>
 #include <string>
 #include <cassert>
+#include <cstdlib>
 
 #include "SFML/Graphics.hpp"
 
 #include "boid.hpp"
+
+float randFloat(float endFloat) {
+    return static_cast<float>(rand()) / static_cast<float>(RAND_MAX / endFloat);
+}
 
 int main()
 {
@@ -36,11 +41,14 @@ int main()
     int numOfBoids = 25;
     boid_sim::Boid boidFlock[25];
 
+    srand(time(0));
+
     for (int i = 0; i < numOfBoids; i++) {
-        sf::Vector2f boidPos = sf::Vector2f(5.f + (i * 25), 250.f);
+        float x = randFloat(boundarySize.x);
+        float y = randFloat(boundarySize.y);
+        sf::Vector2f boidPos = sf::Vector2f(x, y);
         sf::ConvexShape boidShape{ arrowHead };
         boidFlock[i] = boid_sim::Boid(boidPos, boidShape);
-        //printf("%f", boidFlock[i].getPos().x);
     }
 
     #pragma region Font and Text
