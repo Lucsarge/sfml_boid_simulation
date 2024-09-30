@@ -8,7 +8,7 @@ namespace boid_sim {
 	}
 
 	void Boid::updatePos(sf::Vector2f newPos) {
-		boidPos += newPos;
+		boidPos = newPos;
 		boidShape.setPosition(boidPos);
 	}
 

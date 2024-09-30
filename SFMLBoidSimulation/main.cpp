@@ -26,10 +26,11 @@ int main()
     boundary.setFillColor(sf::Color::Black);
 
     // A Shape to render for each boid
+    // starts with boid pointing to the right (east)
     sf::ConvexShape arrowHead = sf::ConvexShape(3);
-    arrowHead.setPoint(0, sf::Vector2f(0.f, -1.f));
-    arrowHead.setPoint(1, sf::Vector2f(0.5f, 0.5f));
-    arrowHead.setPoint(2, sf::Vector2f(-0.5f, 0.5f));
+    arrowHead.setPoint(0, sf::Vector2f(1.f, 0.f));
+    arrowHead.setPoint(1, sf::Vector2f(-0.5f, 0.5f));
+    arrowHead.setPoint(2, sf::Vector2f(-0.5f, -0.5f));
     arrowHead.setFillColor(sf::Color::Transparent);
     arrowHead.setOutlineColor(sf::Color::Green);
     arrowHead.setOutlineThickness(0.1f);
@@ -38,15 +39,17 @@ int main()
     arrowHead.setRotation(0);
 
     // Create boid flock
-    int numOfBoids = 1;
+    const float boidMoveSpeed{ 10.f };
+    const float boidRotSpeed{ 2.f };
+    int numOfBoids = 10;
     std::vector<boid_sim::Boid> boidFlock = std::vector<boid_sim::Boid>();
 
     srand(time(0));
 
     // Create the boids
     for (int i = 0; i < numOfBoids; i++) {
-        sf::Vector2f boidPos = sf::Vector2f(randFloat(boundarySize.x), randFloat(boundarySize.y));
-        float boidLookAngle = randFloat(360);
+        sf::Vector2f boidPos = sf::Vector2f(randFloat(boundarySize.x), randFloat(boundarySize.y)); // set random position within boundary
+        float boidLookAngle = randFloat(360); // set random rotation
         sf::ConvexShape boidShape = sf::ConvexShape(arrowHead);
         boidFlock.push_back(boid_sim::Boid(boidPos, boidLookAngle, boidShape));
     }
@@ -84,12 +87,18 @@ int main()
 
         /* Simulation Loop
         * 1. Move the boids forward
+        * 2. Calculate their rotation based on surroundings
         */
 
         for (boid_sim::Boid& boid : boidFlock) {
-            sf::Vector2f newPos = sf::Vector2f(0.f, 1.f) * deltaAsSeconds * 50.f;
+            // move the boid forward
+            sf::Vector2f newPos = boid.getPos() + (boid.getForwardDir() * deltaAsSeconds * boidMoveSpeed);
             sf::ConvexShape* shape = boid.getShape();
             boid.updatePos(newPos);
+
+            // rotate the boid in a circle
+            /*float newAngle = std::fmod(boid.getRot() + (deltaAsSeconds * boidRotSpeed), 360.f);
+            boid.updateRot(newAngle);*/
         }
 
         float moveSpeed = 5.f;
@@ -97,8 +106,8 @@ int main()
         window.clear();
 
         /* Draw Loop
-        * 1. Draw the static border that represents the extents that the boids can move in
-        * 2. Draw the boids in the flock with their newly updated positions
+        * 1. Draw the static border that represents the extents that the boids can move within
+        * 2. Draw the boids in the flock with their newly updated positions and rotations
         */
 
         // draw the border
