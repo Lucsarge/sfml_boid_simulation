@@ -2,6 +2,9 @@
 
 #include "SFML/Graphics.hpp"
 
+#define _USE_MATH_DEFINES
+#include <math.h>
+
 namespace boid_sim {
 	class Boid {
 	public:
@@ -12,10 +15,9 @@ namespace boid_sim {
 		sf::ConvexShape* getShape() { return &boidShape; }
 
 		const sf::Vector2f getForwardDir() {
-			return sf::Vector2f(
-				cos(boidRot),
-				sin(boidRot)
-			);
+			sf::Vector2f forwardDir = sf::Vector2f(cos(-(boidRot * (M_PI / 180.f))), sin(-(boidRot * (M_PI / 180.f))));
+			forwardDir.y = -forwardDir.y;
+			return forwardDir;
 		}
 		
 		void updatePos(sf::Vector2f newPos);
