@@ -37,21 +37,11 @@ int main()
     arrowHead.setScale(sf::Vector2f(20.f, 20.f));
     arrowHead.setRotation(0);
 
-    sf::ConvexShape testBoidShape = sf::ConvexShape(arrowHead);
-
-    testBoidShape.setPosition(sf::Vector2f(21.f, 12.f));
-
-    // set 2 variables to the testboid shape and arrowhead getPosition()
-
     // Create boid flock
     int numOfBoids = 1;
     std::vector<boid_sim::Boid> boidFlock = std::vector<boid_sim::Boid>();
 
     srand(time(0));
-
-    sf::CircleShape testCircle = sf::CircleShape(50.f);
-    testCircle.setFillColor(sf::Color::Blue);
-    testCircle.setPosition(250.f, 250.f);
 
     // Create the boids
     for (int i = 0; i < numOfBoids; i++) {
@@ -60,8 +50,6 @@ int main()
         sf::ConvexShape boidShape = sf::ConvexShape(arrowHead);
         boidFlock.push_back(boid_sim::Boid(boidPos, boidLookAngle, boidShape));
     }
-
-    std::cout << "Shape mem address: " << &boidFlock[0] << "\n";
 
 
     #pragma region Font and Text
@@ -100,18 +88,11 @@ int main()
 
         for (boid_sim::Boid& boid : boidFlock) {
             sf::Vector2f newPos = sf::Vector2f(0.f, 1.f) * deltaAsSeconds * 50.f;
-            const sf::ConvexShape* shape = boid.getShape();
-            std::cout << "Shape mem address: " << &boid << "\n";
+            sf::ConvexShape* shape = boid.getShape();
             boid.updatePos(newPos);
-
-            /*sf::Vector2f testMovePos = testBoidShape.getPosition() + sf::Vector2f(0.f, 1.f) * deltaAsSeconds * 50.f;
-            testBoidShape.setPosition(testMovePos);*/
         }
 
-        // test updward movement of testCircle with delta time
-        // sf::Vector2f(0.f, 1.f) = global down vector because of how the draw goes from left to right, top to bottom
         float moveSpeed = 5.f;
-        testCircle.setPosition(testCircle.getPosition() + (sf::Vector2f(0.f, 1.f) * deltaAsSeconds * moveSpeed));
 
         window.clear();
 
@@ -119,22 +100,15 @@ int main()
         * 1. Draw the static border that represents the extents that the boids can move in
         * 2. Draw the boids in the flock with their newly updated positions
         */
+
         // draw the border
         window.draw(boundary);
-
-        testBoidShape.setPosition(testBoidShape.getPosition() + (sf::Vector2f(0.f, 1.f) * deltaAsSeconds * moveSpeed));
 
         // draw the boids
         for (boid_sim::Boid& boid : boidFlock)
         {
             window.draw(*(boid.getShape()));
-            std::cout << "Shape mem address: " << &boid << "\n";
-
-
-            window.draw(testBoidShape);
         }
-
-        window.draw(testCircle);
 
         window.display();
     }
