@@ -8,11 +8,12 @@
 namespace boid_sim {
 	class Boid {
 	public:
-		Boid(sf::Vector2f position, float rotation, sf::ConvexShape& shape);
+		Boid(uint16_t id, sf::Vector2f position, float rotation, sf::ConvexShape& shape);
 
 		const sf::Vector2f getPos() { return boidPos; }
 		const float getRot() { return boidRot; }
 		sf::ConvexShape* getShape() { return &boidShape; }
+		const float getId() { return id; }
 
 		const sf::Vector2f getForwardDir() {
 			sf::Vector2f forwardDir = sf::Vector2f(cos(-(boidRot * (M_PI / 180.f))), sin(-(boidRot * (M_PI / 180.f))));
@@ -27,5 +28,6 @@ namespace boid_sim {
 		sf::Vector2f boidPos;
 		float boidRot;
 		sf::ConvexShape boidShape;
+		uint16_t id;
 	};
 }

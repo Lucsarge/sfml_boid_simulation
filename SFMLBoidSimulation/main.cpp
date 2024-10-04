@@ -7,6 +7,10 @@
 
 #include "boid.hpp"
 
+float vector2fDist(sf::Vector2f startVec, sf::Vector2f endVec) {
+    return std::sqrt(std::powf(endVec.x - startVec.x, 2.f) + std::powf(endVec.y - startVec.y, 2.f));
+}
+
 float randFloat(float endFloat) {
     return static_cast<float>(rand()) / static_cast<float>(RAND_MAX / endFloat);
 }
@@ -51,7 +55,7 @@ int main()
         sf::Vector2f boidPos = sf::Vector2f(randFloat(boundarySize.x), randFloat(boundarySize.y)); // set random position within boundary
         float boidLookAngle = randFloat(360); // set random rotation
         sf::ConvexShape boidShape = sf::ConvexShape(arrowHead);
-        boidFlock.push_back(boid_sim::Boid(boidPos, boidLookAngle, boidShape));
+        boidFlock.push_back(boid_sim::Boid(i, boidPos, boidLookAngle, boidShape));
     }
 
 
@@ -117,6 +121,23 @@ int main()
         for (boid_sim::Boid& boid : boidFlock)
         {
             window.draw(*(boid.getShape()));
+
+            // Draw lines connecting the first boid to each other
+            //if (boid.getId() == 0) {
+            //    for (boid_sim::Boid& nearbyBoid : boidFlock) {
+            //        if (nearbyBoid.getId() == boid.getId()) { continue; }
+            //
+            //        if (vector2fDist(boid.getPos(), nearbyBoid.getPos()) < boidViewRadius) {
+            //            sf::Vertex line[] = {
+            //                boid.getPos(),
+            //                nearbyBoid.getPos()
+            //            };
+            //            line->color = sf::Color::Red;
+            //
+            //            window.draw(line, 2, sf::Lines);
+            //        }
+            //    }
+            //}
         }
 
         window.display();

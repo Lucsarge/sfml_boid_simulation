@@ -2,7 +2,7 @@
 
 
 namespace boid_sim {
-	Boid::Boid(sf::Vector2f position, float rotation, sf::ConvexShape& shape) : boidShape{shape} {
+	Boid::Boid(uint16_t id, sf::Vector2f position, float rotation, sf::ConvexShape& shape) : id{ id }, boidShape { shape } {
 		updatePos(position);
 		updateRot(rotation);
 	}
