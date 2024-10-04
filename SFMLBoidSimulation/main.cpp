@@ -45,6 +45,7 @@ int main()
     // Create boid flock
     const float boidMoveSpeed{ 10.f };
     const float boidRotSpeed{ 2.f };
+    const float boidViewRadius{ 100.f };
     int numOfBoids = 10;
     std::vector<boid_sim::Boid> boidFlock = std::vector<boid_sim::Boid>();
 
@@ -53,6 +54,7 @@ int main()
     // Create the boids
     for (int i = 0; i < numOfBoids; i++) {
         sf::Vector2f boidPos = sf::Vector2f(randFloat(boundarySize.x), randFloat(boundarySize.y)); // set random position within boundary
+        //sf::Vector2f boidPos = sf::Vector2f(randFloat(200) + 250.f, randFloat(200) + 250.f);
         float boidLookAngle = randFloat(360); // set random rotation
         sf::ConvexShape boidShape = sf::ConvexShape(arrowHead);
         boidFlock.push_back(boid_sim::Boid(i, boidPos, boidLookAngle, boidShape));
@@ -91,21 +93,39 @@ int main()
 
         /* Simulation Loop
         * 1. Move the boids forward
-        * 2. Calculate their rotation based on surroundings
+        * 2. Calculate their rotation based on surroundingsf
         */
 
         for (boid_sim::Boid& boid : boidFlock) {
+            // Align calculate rotation
+            float avgRot{};
+            
+            int numOfFlockmates{ 0 };
+            // get nearby boids
+            for (boid_sim::Boid& flockmate : boidFlock) {
+                if (&flockmate == &boid) { continue; } // skip the current boid that you're working on
+
+                float dist = vector2fDist(flockmate.getPos(), boid.getPos());
+                if (dist < boidViewRadius) {
+                    numOfFlockmates++;
+
+                    avgRot += flockmate.getRot();
+                }
+            }
+            if (numOfFlockmates != 0) {
+                avgRot /= numOfFlockmates;
+                float currRot = boid.getRot();
+                float newRot = (avgRot - currRot) * deltaAsSeconds * 0.5f;
+                newRot += currRot;
+                std::cout << "New Rot: " << newRot << "\n";
+                boid.updateRot(newRot);
+            }
+
             // move the boid forward
             sf::Vector2f newPos = boid.getPos() + (boid.getForwardDir() * deltaAsSeconds * boidMoveSpeed);
             sf::ConvexShape* shape = boid.getShape();
             boid.updatePos(newPos);
-
-            // rotate the boid in a circle
-            /*float newAngle = std::fmod(boid.getRot() + (deltaAsSeconds * boidRotSpeed), 360.f);
-            boid.updateRot(newAngle);*/
         }
-
-        float moveSpeed = 5.f;
 
         window.clear();
 
