@@ -25,6 +25,8 @@ namespace boid_sim {
 		void updateRot(float newAngle);
 
 	private:
+		sf::Vector2f velocity;
+
 		sf::Vector2f boidPos;
 		float boidRot;
 		sf::ConvexShape boidShape;

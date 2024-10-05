@@ -43,23 +43,21 @@ int main()
     arrowHead.setRotation(0);
 
     // Create boid flock
-    const float boidMoveSpeed{ 10.f };
-    const float boidRotSpeed{ 2.f };
+    const float boidMoveSpeed{ 50.f };
     const float boidViewRadius{ 100.f };
-    int numOfBoids = 10;
+    const int numOfBoids{ 100 };
     std::vector<boid_sim::Boid> boidFlock = std::vector<boid_sim::Boid>();
 
     srand(time(0));
 
     // Create the boids
     for (int i = 0; i < numOfBoids; i++) {
-        sf::Vector2f boidPos = sf::Vector2f(randFloat(boundarySize.x), randFloat(boundarySize.y)); // set random position within boundary
-        //sf::Vector2f boidPos = sf::Vector2f(randFloat(200) + 250.f, randFloat(200) + 250.f);
+        //sf::Vector2f boidPos = sf::Vector2f(randFloat(boundarySize.x), randFloat(boundarySize.y)); // set random position within boundary
+        sf::Vector2f boidPos = sf::Vector2f(randFloat(200) + 250.f, randFloat(200) + 250.f);
         float boidLookAngle = randFloat(360); // set random rotation
         sf::ConvexShape boidShape = sf::ConvexShape(arrowHead);
         boidFlock.push_back(boid_sim::Boid(i, boidPos, boidLookAngle, boidShape));
     }
-
 
     #pragma region Font and Text
     // The Font and Text were used for displaying the delta time of each frame
@@ -98,8 +96,9 @@ int main()
 
         for (boid_sim::Boid& boid : boidFlock) {
             // Align calculate rotation
-            float avgRot{};
-            
+            float alignRot{};
+            sf::Vector2f coherePos{};
+
             int numOfFlockmates{ 0 };
             // get nearby boids
             for (boid_sim::Boid& flockmate : boidFlock) {
@@ -109,16 +108,24 @@ int main()
                 if (dist < boidViewRadius) {
                     numOfFlockmates++;
 
-                    avgRot += flockmate.getRot();
+                    alignRot += flockmate.getRot();
+                    coherePos += flockmate.getPos();
                 }
             }
+
+            // Apply steering behaviors
             if (numOfFlockmates != 0) {
-                avgRot /= numOfFlockmates;
+                // Alignment
+                alignRot /= numOfFlockmates;
                 float currRot = boid.getRot();
-                float newRot = (avgRot - currRot) * deltaAsSeconds * 0.5f;
+                float newRot = (alignRot - currRot) * deltaAsSeconds;
                 newRot += currRot;
                 std::cout << "New Rot: " << newRot << "\n";
                 boid.updateRot(newRot);
+
+                // Cohesion
+                coherePos = sf::Vector2f{ coherePos.x / numOfFlockmates, coherePos.y / numOfFlockmates };
+                sf::Vector2f newLookDir{ coherePos };
             }
 
             // move the boid forward

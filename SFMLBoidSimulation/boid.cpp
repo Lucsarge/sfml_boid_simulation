@@ -3,6 +3,7 @@
 
 namespace boid_sim {
 	Boid::Boid(uint16_t id, sf::Vector2f position, float rotation, sf::ConvexShape& shape) : id{ id }, boidShape { shape } {
+		velocity = sf::Vector2f{ 0.f, 0.f };
 		updatePos(position);
 		updateRot(rotation);
 	}
