@@ -55,6 +55,7 @@ int main()
 
     // Create boid flock
     const float boidViewRadius{ 150.f };
+    float boidSeparationRadius = 70.f;
     const int numOfBoids{ 20 };
     std::vector<boid_sim::Boid> boidFlock = std::vector<boid_sim::Boid>();
 
@@ -97,6 +98,7 @@ int main()
 
         // obtain delta time for game loop
         sf::Time delta = clock.restart();
+        // TODO: rename this to deltaTime
         auto deltaAsSeconds = delta.asSeconds();
         //std::string deltaAsSecondsString = std::to_string(delta.asSeconds()); // keeping for later debug purposes
 
@@ -111,7 +113,8 @@ int main()
             sf::Vector2f avgVelocity{};
             sf::Vector2f coherePos{};
 
-            int numOfFlockmates{ 0 };
+            int numOfFlockmates{ 0 }; // total number of boids that appear within the boids view raidus
+            int numOfCrowd{ 0 }; // total number of flockmates that are close enough to need separation
             // get nearby boids
             for (boid_sim::Boid& flockmate : boidFlock) {
                 if (&flockmate == &boid) { continue; } // skip the current boid that you're working on
@@ -120,7 +123,10 @@ int main()
                 if (dist < boidViewRadius) {
                     numOfFlockmates++;
 
-                    avgVecFromBoid += (flockmate.getPos() - boid.getPos());
+                    if (dist < boidSeparationRadius) {
+                        numOfCrowd++;
+                        avgVecFromBoid += (boid.getPos() - flockmate.getPos());
+                    }
                     avgVelocity += flockmate.getVel();
                     coherePos += flockmate.getPos();
                 }
@@ -128,31 +134,34 @@ int main()
 
             // Apply steering behaviors
             if (numOfFlockmates != 0) {
-                sf::Vector2f newVelocity = sf::Vector2f{};
+                sf::Vector2f steeringVector{}; // vector that will capture the sum of all the steering behavior adjustments
 
                 // Separation
-                avgVecFromBoid = sf::Vector2f(avgVecFromBoid.x / numOfFlockmates, avgVecFromBoid.y / numOfFlockmates); // avg vector from boid to flockmates
-                avgVecFromBoid = sf::Vector2f(avgVecFromBoid.x * -1.f, avgVecFromBoid.y * -1.f); // reverse the direction of the average vector from the boid
-                //std::cout << "avgVec inverted: " << avgVecFromBoid.x << ", " << avgVecFromBoid.y << "\n";
-                newVelocity += normalize((boid.getVel() + (avgVecFromBoid * deltaAsSeconds)) * 0.03f);
+                if (numOfCrowd > 0) {
+                    sf::Vector2f separationVec;
+                    float separationStrength = 1.8f;
+                    avgVecFromBoid = sf::Vector2f(avgVecFromBoid.x / numOfFlockmates, avgVecFromBoid.y / numOfFlockmates); // avg vector from boid to flockmates
+                    separationVec = normalize(avgVecFromBoid) * separationStrength;
+                    steeringVector += separationVec;
+                }
 
                 // Alignment
+                sf::Vector2f alignmentVec;
+                float alignmentStrength = 0.75f;
                 avgVelocity = sf::Vector2f(avgVelocity.x / numOfFlockmates, avgVelocity.y / numOfFlockmates);
-                float alignmentAlpha = 0.35f * deltaAsSeconds;
-                // TODO: Create vector lerp function (startVec, endVec, alpha)
-                sf::Vector2f interpolatedAlignment = vLerp(boid.getVel(), avgVelocity, alignmentAlpha);
-                newVelocity += normalize(interpolatedAlignment);
+                alignmentVec = (normalize(avgVelocity) - boid.getVel()) * alignmentStrength;
+                steeringVector += alignmentVec;
 
                 // Cohesion
+                sf::Vector2f coherenceVec;
+                float coherenceStrength = 0.025f;
                 coherePos = sf::Vector2f(coherePos.x / numOfFlockmates, coherePos.y / numOfFlockmates); // avg position of flockmates
                 sf::Vector2f endOfVelocity = sf::Vector2f(boid.getPos() + boid.getVel()); // get the point from the boids position to the end of its velocity
-                float coherenceAlpha = 0.2f * deltaAsSeconds;
-                sf::Vector2f interpolatedCoherencePos = vLerp(endOfVelocity, coherePos, coherenceAlpha); // lerp 1/10th of the way between the average position and the end of the current boids velocity
-                sf::Vector2f coherenceVelocity = interpolatedCoherencePos - boid.getPos(); // calculate vector from boid.getPos() to interpolated
-                newVelocity += normalize(coherenceVelocity);
+                coherenceVec = (coherePos - endOfVelocity) * coherenceStrength;
+                steeringVector += coherenceVec;
 
-                // set the new velocity after computing the other steering behaviors
-                boid.setVel(newVelocity);
+                // set the new velocity to the normalized sum of each steering behavior vectors multiplied by delta time
+                boid.setVel(normalize(boid.getVel() + (steeringVector * deltaAsSeconds)));
             }
 
             // move the boid along its current velocity
