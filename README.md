@@ -12,3 +12,6 @@ Small C++ project to create a boid simulation assisted by the sfml library in or
 - [Boids by Craig Reynolds](https://www.red3d.com/cwr/boids/)
 - [Boids Wiki](https://en.wikipedia.org/wiki/Boids)
 - [Original Boids Paper](https://www.cs.toronto.edu/~dt/siggraph97-course/cwr87/)
+
+### Optimizations
+- [Spatial Subdivision](https://cesium.com/blog/2017/03/30/spatial-subdivision/)
