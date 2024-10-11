@@ -15,6 +15,13 @@ float randFloat(float endFloat) {
     return static_cast<float>(rand()) / static_cast<float>(RAND_MAX / endFloat);
 }
 
+sf::Vector2f normalize(sf::Vector2f v) {
+    float vLength = sqrtf((v.x * v.x) + (v.y * v.y));
+    v.x = v.x / vLength;
+    v.y = v.y / vLength;
+    return v;
+}
+
 int main()
 {
     // test code evaluating sfml is working
@@ -43,23 +50,21 @@ int main()
     arrowHead.setRotation(0);
 
     // Create boid flock
-    const float boidMoveSpeed{ 10.f };
-    const float boidRotSpeed{ 2.f };
-    const float boidViewRadius{ 100.f };
-    int numOfBoids = 10;
+    const float boidViewRadius{ 150.f };
+    const int numOfBoids{ 20 };
     std::vector<boid_sim::Boid> boidFlock = std::vector<boid_sim::Boid>();
 
     srand(time(0));
 
     // Create the boids
     for (int i = 0; i < numOfBoids; i++) {
-        sf::Vector2f boidPos = sf::Vector2f(randFloat(boundarySize.x), randFloat(boundarySize.y)); // set random position within boundary
-        //sf::Vector2f boidPos = sf::Vector2f(randFloat(200) + 250.f, randFloat(200) + 250.f);
-        float boidLookAngle = randFloat(360); // set random rotation
+        //sf::Vector2f boidPos = sf::Vector2f(randFloat(boundarySize.x), randFloat(boundarySize.y)); // set random position within boundary
+        sf::Vector2f boidPos = sf::Vector2f(randFloat(200) + 250.f, randFloat(200) + 250.f);
+        sf::Vector2f boidVel = normalize(sf::Vector2f((randFloat(2.f) - 1.f), (randFloat(2.f) - 1.f)));
+        std::cout << "Boid " << i << " normalized velocity: " << boidVel.x << ", " << boidVel.y << "\n";
         sf::ConvexShape boidShape = sf::ConvexShape(arrowHead);
-        boidFlock.push_back(boid_sim::Boid(i, boidPos, boidLookAngle, boidShape));
+        boidFlock.push_back(boid_sim::Boid(i, boidPos, boidVel, boidShape));
     }
-
 
     #pragma region Font and Text
     // The Font and Text were used for displaying the delta time of each frame
@@ -92,14 +97,15 @@ int main()
         //std::string deltaAsSecondsString = std::to_string(delta.asSeconds()); // keeping for later debug purposes
 
         /* Simulation Loop
-        * 1. Move the boids forward
-        * 2. Calculate their rotation based on surroundingsf
+        * 1. Steering behaviors
+        * 2. Move the boids forward
         */
 
         for (boid_sim::Boid& boid : boidFlock) {
             // Align calculate rotation
-            float avgRot{};
-            
+            sf::Vector2f avgVelocity{};
+            sf::Vector2f coherePos{};
+
             int numOfFlockmates{ 0 };
             // get nearby boids
             for (boid_sim::Boid& flockmate : boidFlock) {
@@ -109,22 +115,36 @@ int main()
                 if (dist < boidViewRadius) {
                     numOfFlockmates++;
 
-                    avgRot += flockmate.getRot();
+                    avgVelocity += flockmate.getVel();
+                    coherePos += flockmate.getPos();
                 }
             }
+
+            // Apply steering behaviors
             if (numOfFlockmates != 0) {
-                avgRot /= numOfFlockmates;
-                float currRot = boid.getRot();
-                float newRot = (avgRot - currRot) * deltaAsSeconds * 0.5f;
-                newRot += currRot;
-                std::cout << "New Rot: " << newRot << "\n";
-                boid.updateRot(newRot);
+                sf::Vector2f newVelocity = sf::Vector2f{};
+
+                // Alignment
+                avgVelocity = sf::Vector2f(avgVelocity.x / numOfFlockmates, avgVelocity.y / numOfFlockmates);
+                float alignmentAlpha = 0.35f * deltaAsSeconds;
+                // TODO: Create vector lerp function (startVec, endVec, alpha)
+                sf::Vector2f interpolatedAlignment = ((1 - alignmentAlpha) * boid.getVel()) + (alignmentAlpha * avgVelocity);
+                newVelocity += normalize(interpolatedAlignment);
+
+                // Cohesion
+                coherePos = sf::Vector2f(coherePos.x / numOfFlockmates, coherePos.y / numOfFlockmates); // avg position of flockmates
+                sf::Vector2f endOfVelocity = sf::Vector2f(boid.getPos() + boid.getVel()); // get the point from the boids position to the end of its velocity
+                float coheranceAlpha = 0.2f * deltaAsSeconds;
+                sf::Vector2f interpolatedCoherencePos = ((1 - coheranceAlpha) * endOfVelocity) + (coheranceAlpha * coherePos); // lerp 1/10th of the way between the average position and the end of the current boids velocity
+                sf::Vector2f coherenceVelocity = interpolatedCoherencePos - boid.getPos(); // calculate vector from boid.getPos() to interpolated
+                newVelocity += normalize(coherenceVelocity);
+
+                // set the new velocity after computing the other steering behaviors
+                boid.setVel(newVelocity);
             }
 
-            // move the boid forward
-            sf::Vector2f newPos = boid.getPos() + (boid.getForwardDir() * deltaAsSeconds * boidMoveSpeed);
-            sf::ConvexShape* shape = boid.getShape();
-            boid.updatePos(newPos);
+            // move the boid along its current velocity
+            boid.move(deltaAsSeconds);
         }
 
         window.clear();
