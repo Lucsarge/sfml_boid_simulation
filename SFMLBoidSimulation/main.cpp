@@ -62,8 +62,8 @@ int main()
 
     // Create the boids
     for (int i = 0; i < numOfBoids; i++) {
-        //sf::Vector2f boidPos = sf::Vector2f(randFloat(boundarySize.x), randFloat(boundarySize.y)); // set random position within boundary
-        sf::Vector2f boidPos = sf::Vector2f(randFloat(200) + 250.f, randFloat(200) + 250.f);
+        sf::Vector2f boidPos = sf::Vector2f(randFloat(boundarySize.x), randFloat(boundarySize.y)); // set random position within boundary
+        //sf::Vector2f boidPos = sf::Vector2f(randFloat(200) + 250.f, randFloat(200) + 250.f);
         sf::Vector2f boidVel = normalize(sf::Vector2f((randFloat(2.f) - 1.f), (randFloat(2.f) - 1.f)));
         std::cout << "Boid " << i << " normalized velocity: " << boidVel.x << ", " << boidVel.y << "\n";
         sf::ConvexShape boidShape = sf::ConvexShape(arrowHead);
@@ -107,6 +107,7 @@ int main()
 
         for (boid_sim::Boid& boid : boidFlock) {
             // Align calculate rotation
+            sf::Vector2f avgVecFromBoid{};
             sf::Vector2f avgVelocity{};
             sf::Vector2f coherePos{};
 
@@ -119,6 +120,7 @@ int main()
                 if (dist < boidViewRadius) {
                     numOfFlockmates++;
 
+                    avgVecFromBoid += (flockmate.getPos() - boid.getPos());
                     avgVelocity += flockmate.getVel();
                     coherePos += flockmate.getPos();
                 }
@@ -127,6 +129,12 @@ int main()
             // Apply steering behaviors
             if (numOfFlockmates != 0) {
                 sf::Vector2f newVelocity = sf::Vector2f{};
+
+                // Separation
+                avgVecFromBoid = sf::Vector2f(avgVecFromBoid.x / numOfFlockmates, avgVecFromBoid.y / numOfFlockmates); // avg vector from boid to flockmates
+                avgVecFromBoid = sf::Vector2f(avgVecFromBoid.x * -1.f, avgVecFromBoid.y * -1.f); // reverse the direction of the average vector from the boid
+                //std::cout << "avgVec inverted: " << avgVecFromBoid.x << ", " << avgVecFromBoid.y << "\n";
+                newVelocity += normalize((boid.getVel() + (avgVecFromBoid * deltaAsSeconds)) * 0.03f);
 
                 // Alignment
                 avgVelocity = sf::Vector2f(avgVelocity.x / numOfFlockmates, avgVelocity.y / numOfFlockmates);
