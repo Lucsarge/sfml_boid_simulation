@@ -22,6 +22,10 @@ sf::Vector2f normalize(sf::Vector2f v) {
     return v;
 }
 
+sf::Vector2f vLerp(sf::Vector2f startVec, sf::Vector2f endVec, float alpha) {
+    return sf::Vector2f(((1 - alpha) * startVec) + (alpha * endVec));
+}
+
 int main()
 {
     // test code evaluating sfml is working
@@ -128,14 +132,14 @@ int main()
                 avgVelocity = sf::Vector2f(avgVelocity.x / numOfFlockmates, avgVelocity.y / numOfFlockmates);
                 float alignmentAlpha = 0.35f * deltaAsSeconds;
                 // TODO: Create vector lerp function (startVec, endVec, alpha)
-                sf::Vector2f interpolatedAlignment = ((1 - alignmentAlpha) * boid.getVel()) + (alignmentAlpha * avgVelocity);
+                sf::Vector2f interpolatedAlignment = vLerp(boid.getVel(), avgVelocity, alignmentAlpha);
                 newVelocity += normalize(interpolatedAlignment);
 
                 // Cohesion
                 coherePos = sf::Vector2f(coherePos.x / numOfFlockmates, coherePos.y / numOfFlockmates); // avg position of flockmates
                 sf::Vector2f endOfVelocity = sf::Vector2f(boid.getPos() + boid.getVel()); // get the point from the boids position to the end of its velocity
-                float coheranceAlpha = 0.2f * deltaAsSeconds;
-                sf::Vector2f interpolatedCoherencePos = ((1 - coheranceAlpha) * endOfVelocity) + (coheranceAlpha * coherePos); // lerp 1/10th of the way between the average position and the end of the current boids velocity
+                float coherenceAlpha = 0.2f * deltaAsSeconds;
+                sf::Vector2f interpolatedCoherencePos = vLerp(endOfVelocity, coherePos, coherenceAlpha); // lerp 1/10th of the way between the average position and the end of the current boids velocity
                 sf::Vector2f coherenceVelocity = interpolatedCoherencePos - boid.getPos(); // calculate vector from boid.getPos() to interpolated
                 newVelocity += normalize(coherenceVelocity);
 
