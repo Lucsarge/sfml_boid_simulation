@@ -26,10 +26,35 @@ sf::Vector2f vLerp(sf::Vector2f startVec, sf::Vector2f endVec, float alpha) {
     return sf::Vector2f(((1 - alpha) * startVec) + (alpha * endVec));
 }
 
+struct RayHit {
+    sf::Vector2f intersection;
+    bool successful;
+};
+
+RayHit lineIntersection(sf::Vector2f a, sf::Vector2f b, sf::Vector2f c, sf::Vector2f d) {
+    // scalar value from A to the intersection of AB and CD
+    float alpha = ((a.y-b.y) * (d.x-c.x) - (a.x - c.x) * (d.y - c.y)) / ((b.x - a.x) * (d.y - c.y) - (b.y - a.y) * (d.x - c.x));
+
+    RayHit hit{};
+    if (alpha > 0) {
+        hit.intersection = a + (sf::Vector2f(b.x - a.x, b.y - a.y) * alpha);
+        hit.successful = true;
+    }
+
+    return hit;
+}
+
 int main()
 {
     // test code evaluating sfml is working
     sf::RenderWindow window(sf::VideoMode(800, 800), "SFML Works");
+
+    sf::Vector2f corners[4] = {
+        sf::Vector2f(0.f, 0.f),      // top left
+        sf::Vector2f(400.f, 0.f),    // top right
+        sf::Vector2f(0.f, 400.f),    // bottom left
+        sf::Vector2f(400.f, 400.f),  // bottom right
+    };
 
     // A border for the boids to move within
     float boundaryThickness = 2.5f;
@@ -56,6 +81,7 @@ int main()
     // Create boid flock
     const float boidViewRadius{ 150.f };
     float boidSeparationRadius = 70.f;
+    const float wallRayLength = 100.f;
     const int numOfBoids{ 20 };
     std::vector<boid_sim::Boid> boidFlock = std::vector<boid_sim::Boid>();
 
@@ -108,6 +134,26 @@ int main()
         */
 
         for (boid_sim::Boid& boid : boidFlock) {
+            // check for wall collisions
+            sf::Vector2f wallRayEndPoint = boid.getPos() + (boid.getVel() * wallRayLength);
+            if (wallRayEndPoint.x < 0.f) { // hit left wall
+                auto hit = lineIntersection(boid.getPos(), wallRayEndPoint, corners[0], corners[2]);
+                if (hit.successful) {
+                    //std::cout << "Sucessfull hit\n";
+                    // currently testing for basic intersection
+                    boid.getShape()->setOutlineColor(sf::Color::Blue);
+                }
+            }
+            else if (wallRayEndPoint.x > 500.f) { // hit right wall
+
+            }
+            else if (wallRayEndPoint.y < 0.f) { // hit top wall
+
+            }
+            else if (wallRayEndPoint.y > 500.f) { // hit bottom wall
+
+            }
+
             // Align calculate rotation
             sf::Vector2f avgVecFromBoid{};
             sf::Vector2f avgVelocity{};
