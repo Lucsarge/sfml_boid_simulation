@@ -56,6 +56,7 @@ int main()
     // Create boid flock
     const float boidViewRadius{ 150.f };
     float boidSeparationRadius = 70.f;
+    const float wallRayLength = 100.f;
     const int numOfBoids{ 20 };
     std::vector<boid_sim::Boid> boidFlock = std::vector<boid_sim::Boid>();
 
@@ -108,6 +109,22 @@ int main()
         */
 
         for (boid_sim::Boid& boid : boidFlock) {
+            // check for wall collisions
+            sf::Vector2f wallRayEndPoint = boid.getPos() + (boid.getVel() * wallRayLength);
+            if (wallRayEndPoint.x < 0.f) { // hit left wall
+
+            }
+            else if (wallRayEndPoint.x > 500.f) { // hit right wall
+
+            }
+            else if (wallRayEndPoint.y < 0.f) { // hit top wall
+
+            }
+            else if (wallRayEndPoint.y > 500.f) { // hit bottom wall
+
+            }
+
+
             // Align calculate rotation
             sf::Vector2f avgVecFromBoid{};
             sf::Vector2f avgVelocity{};
