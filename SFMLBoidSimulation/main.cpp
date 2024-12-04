@@ -145,14 +145,30 @@ int main()
                 }
             }
             else if (wallRayEndPoint.x > 500.f) { // hit right wall
-
+                auto hit = lineIntersection(boid.getPos(), wallRayEndPoint, corners[1], corners[3]);
+                if (hit.successful) {
+                    //std::cout << "Sucessfull hit\n";
+                    // currently testing for basic intersection
+                    boid.getShape()->setOutlineColor(sf::Color::Blue);
+                }
             }
             else if (wallRayEndPoint.y < 0.f) { // hit top wall
-
+                auto hit = lineIntersection(boid.getPos(), wallRayEndPoint, corners[0], corners[1]);
+                if (hit.successful) {
+                    //std::cout << "Sucessfull hit\n";
+                    // currently testing for basic intersection
+                    boid.getShape()->setOutlineColor(sf::Color::Blue);
+                }
             }
             else if (wallRayEndPoint.y > 500.f) { // hit bottom wall
-
+                auto hit = lineIntersection(boid.getPos(), wallRayEndPoint, corners[2], corners[2]);
+                if (hit.successful) {
+                    //std::cout << "Sucessfull hit\n";
+                    // currently testing for basic intersection
+                    boid.getShape()->setOutlineColor(sf::Color::Blue);
+                }
             }
+
 
             // Align calculate rotation
             sf::Vector2f avgVecFromBoid{};
