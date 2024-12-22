@@ -1,8 +1,19 @@
 # sfml_boid_simulation
 Small C++ project to create a boid simulation assisted by the sfml library in order improve my personal experience with the C++ language.
 
+## Title of Contents
+- [Dependencies](#Dependencies)
+- [Current State](#Current-State)
+- [Next Steps](#Next-Steps)
+- [References](#References)
+
 ## Dependencies
 - [SFML 2.6.1](https://www.sfml-dev.org/download/sfml/2.6.1/) for Visual C++ 17 (Visual Studio 2022), 64-bit
+
+## Current State
+The simulation is currently equipped with a draw loop and the three basic steering behaviors; separation, alignment, and cohesion.
+
+## Next Steps
 
 ## References
 ### SFML

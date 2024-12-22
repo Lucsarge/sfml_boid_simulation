@@ -51,10 +51,29 @@ int main()
 
     sf::Vector2f corners[4] = {
         sf::Vector2f(0.f, 0.f),      // top left
-        sf::Vector2f(400.f, 0.f),    // top right
-        sf::Vector2f(0.f, 400.f),    // bottom left
-        sf::Vector2f(400.f, 400.f),  // bottom right
+        sf::Vector2f(800.f, 0.f),    // top right
+        sf::Vector2f(0.f, 800.f),    // bottom left
+        sf::Vector2f(800.f, 800.f),  // bottom right
     };
+
+    #pragma region Corners for debug drawing
+    // Include a subtraction to the position to account for the way the circle is drawn
+    sf::CircleShape topLeftCorner = sf::CircleShape(10.f);
+    topLeftCorner.setPosition(corners[0] + sf::Vector2f(-10.f, -10.f));
+    topLeftCorner.setFillColor(sf::Color::Red);
+
+    sf::CircleShape topRightCorner = sf::CircleShape(10.f);
+    topRightCorner.setPosition(corners[1] + sf::Vector2f(-10.f, -10.f));
+    topRightCorner.setFillColor(sf::Color::Green);
+
+    sf::CircleShape botLeftCorner = sf::CircleShape(10.f);
+    botLeftCorner.setPosition(corners[2] + sf::Vector2f(-10.f, -10.f));
+    botLeftCorner.setFillColor(sf::Color::Blue);
+
+    sf::CircleShape botRightCorner = sf::CircleShape(10.f);
+    botRightCorner.setPosition(corners[3] + sf::Vector2f(-10.f, -10.f));
+    botRightCorner.setFillColor(sf::Color::Yellow);
+    #pragma endregion
 
     // A border for the boids to move within
     float boundaryThickness = 2.5f;
@@ -133,42 +152,45 @@ int main()
         * 2. Move the boids forward
         */
 
+        // TODO: extract the 800.f values from the end point checks to a value derived from the current map size
         for (boid_sim::Boid& boid : boidFlock) {
             // check for wall collisions
             sf::Vector2f wallRayEndPoint = boid.getPos() + (boid.getVel() * wallRayLength);
             if (wallRayEndPoint.x < 0.f) { // hit left wall
                 auto hit = lineIntersection(boid.getPos(), wallRayEndPoint, corners[0], corners[2]);
                 if (hit.successful) {
-                    //std::cout << "Sucessfull hit\n";
+                    boid.updateRot(boid.getRot() + 15.f);
                     // currently testing for basic intersection
-                    boid.getShape()->setOutlineColor(sf::Color::Blue);
+                    boid.getShape()->setOutlineColor(sf::Color::Red);
                 }
             }
-            else if (wallRayEndPoint.x > 500.f) { // hit right wall
+            else if (wallRayEndPoint.x > 800.f) { // hit right wall
                 auto hit = lineIntersection(boid.getPos(), wallRayEndPoint, corners[1], corners[3]);
                 if (hit.successful) {
-                    //std::cout << "Sucessfull hit\n";
+                    boid.updateRot(boid.getRot() + 15.f);
                     // currently testing for basic intersection
-                    boid.getShape()->setOutlineColor(sf::Color::Blue);
+                    boid.getShape()->setOutlineColor(sf::Color::Red);
                 }
             }
             else if (wallRayEndPoint.y < 0.f) { // hit top wall
                 auto hit = lineIntersection(boid.getPos(), wallRayEndPoint, corners[0], corners[1]);
                 if (hit.successful) {
-                    //std::cout << "Sucessfull hit\n";
+                    boid.updateRot(boid.getRot() + 15.f);
                     // currently testing for basic intersection
-                    boid.getShape()->setOutlineColor(sf::Color::Blue);
+                    boid.getShape()->setOutlineColor(sf::Color::Red);
                 }
             }
-            else if (wallRayEndPoint.y > 500.f) { // hit bottom wall
-                auto hit = lineIntersection(boid.getPos(), wallRayEndPoint, corners[2], corners[2]);
+            else if (wallRayEndPoint.y > 800.f) { // hit bottom wall
+                auto hit = lineIntersection(boid.getPos(), wallRayEndPoint, corners[2], corners[3]);
                 if (hit.successful) {
-                    //std::cout << "Sucessfull hit\n";
+                    boid.updateRot(boid.getRot() + 15.f);
                     // currently testing for basic intersection
-                    boid.getShape()->setOutlineColor(sf::Color::Blue);
+                    boid.getShape()->setOutlineColor(sf::Color::Red);
                 }
             }
-
+            else {
+                boid.getShape()->setOutlineColor(sf::Color::Green);
+            }
 
             // Align calculate rotation
             sf::Vector2f avgVecFromBoid{};
@@ -239,6 +261,12 @@ int main()
 
         // draw the border
         window.draw(boundary);
+
+        // draw corner for debugging
+        window.draw(topLeftCorner);
+        window.draw(topRightCorner);
+        window.draw(botLeftCorner);
+        window.draw(botRightCorner);
 
         // draw the boids
         for (boid_sim::Boid& boid : boidFlock)
