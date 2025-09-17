@@ -159,7 +159,7 @@ int main()
             if (wallRayEndPoint.x < 0.f) { // hit left wall
                 auto hit = lineIntersection(boid.getPos(), wallRayEndPoint, corners[0], corners[2]);
                 if (hit.successful) {
-                    boid.updateRot(boid.getRot() + 15.f);
+                    boid.updateRot(boid.getRot() + 15.f); // rotate away from the wall clockwise
                     // currently testing for basic intersection
                     boid.getShape()->setOutlineColor(sf::Color::Red);
                 }
